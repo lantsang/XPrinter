@@ -1,0 +1,27 @@
+<?xml version='1.0' encoding='utf-8'?>
+<plugin id="cn.iricbing.xprinter" version="0.0.1" 
+    xmlns="http://apache.org/cordova/ns/plugins/1.0" 
+    xmlns:android="http://schemas.android.com/apk/res/android">
+    <name>XPrinter</name>
+    <js-module name="XPrinter" src="www/XPrinter.js">
+        <clobbers target="XPrinter" />
+    </js-module>
+    <platform name="android">
+        <config-file parent="/*" target="res/xml/config.xml">
+            <feature name="XPrinter">
+                <param name="android-package" value="cn.iricbing.xprinter.XPrinter" />
+            </feature>
+        </config-file>
+        <config-file target="AndroidManifest.xml" parent="/manifest">
+            <uses-permission android:name="android.permission.BLUETOOTH"/>
+            <uses-permission android:name="android.permission.BLUETOOTH_ADMIN"/>
+            <uses-permission android:name="android.permission.INTERNET"/>
+        </config-file>
+        <config-file parent="/manifest/application" target="AndroidManifest.xml">
+            <service android:name="net.posprinter.service.PosprinterService"></service>
+        </config-file>
+        <config-file parent="/*" target="AndroidManifest.xml"></config-file>
+        <source-file src="src/android/posprinterconnectandsendsdk.jar" target-dir="libs" />
+        <source-file src="src/android/XPrinter.java" target-dir="src/cn/iricbing/xprinter/XPrinter" />
+    </platform>
+</plugin>

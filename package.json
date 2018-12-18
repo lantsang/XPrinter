@@ -1,0 +1,13 @@
+{
+  "name": "xprinter",
+  "version": "0.0.6",
+  "description": "printer",
+  "cordova": {
+    "id": "cn.iricbing.xprinter",
+    "platforms": [
+      "android"
+    ]
+  },
+  "author": "Iric",
+  "license": "ISC"
+}
