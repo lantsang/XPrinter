@@ -11,3 +11,7 @@ exports.connect = function (arg0, success, error) {
 exports.printTest = function (title, body, footer, success, error) {
     exec(success, error, 'XPrinter', 'printTest', [title, body, footer]);
 };
+
+exports.printImage = function (uri, success, error) {
+    exec(success, error, 'XPrinter', 'printImage', [uri]);
+};

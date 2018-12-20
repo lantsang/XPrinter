@@ -11,10 +11,20 @@ import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.bluetooth.BluetoothSocket;
 
+import android.content.ContentResolver;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.widget.Toast;
+import android.net.Uri;
+
 import java.io.IOException;
 import java.io.OutputStream;
 import java.util.UUID;
 
+import net.posprinter.utils.BitmapToByteData;
+
+import static net.posprinter.utils.DataForSendToPrinterPos80.printRasterBmp;
 import static net.posprinter.utils.DataForSendToPrinterPos80.selectAlignment;
 import static net.posprinter.utils.DataForSendToPrinterPos80.selectCharacterSize;
 
@@ -26,6 +36,7 @@ public class XPrinter extends CordovaPlugin {
     private BluetoothDevice mBluetoothDevice = null;
     private BluetoothSocket mBluetoothSocket = null;
     private OutputStream mOutputStream = null;
+    private Bitmap logoBmp = null;
 
     private static final Integer SMALL_SIZE = 0;
     private static final Integer NORMAL_SIZE = 17;
@@ -34,6 +45,8 @@ public class XPrinter extends CordovaPlugin {
     private static final Integer ALIGN_LEFT = 0;
     private static final Integer ALIGN_CENTER = 1;
     private static final Integer ALIGN_RIGHT = 2;
+
+    private static final Float LOGO_WIDTH = 500f;
 
     private static final UUID SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB");
 
@@ -55,6 +68,11 @@ public class XPrinter extends CordovaPlugin {
             String body = args.getString(1);
             String footer = args.getString(2);
             this.printTest(title, body, footer, callbackContext);
+        }
+            break;
+        case "printImage": {
+            String uri = args.getString(0);
+            this.printImage(uri, callbackContext);
         }
             break;
         }
@@ -130,12 +148,46 @@ public class XPrinter extends CordovaPlugin {
         mOutputStream.write(sizeByte);
         byte[] aliginByte = selectAlignment(ALIGN_LEFT);
         mOutputStream.write(aliginByte);
-        mOutputStream.write((footer + "\n\n\n\n\n\n").getBytes("GBK"));
+        mOutputStream.write(footer.getBytes("GBK"));
+        mOutputStream.flush();
+    }
+
+    private void printImage(String uri, CallbackContext callbackContext) {
+        try {
+            createLogoBmp(uri);
+            printLogo();
+            cutPaper();
+            callbackContext.success("Print logo success");
+        } catch (Exception e) {
+            callbackContext.error("Print logo error: " + e.toString());
+        }
+    }
+
+    private void createLogoBmp(String uri) throws IOException {
+        ContentResolver cr = this.cordova.getActivity().getContentResolver();
+        logoBmp = BitmapFactory.decodeStream(cr.openInputStream(Uri.parse(uri)));
+        if (logoBmp.getWidth() > LOGO_WIDTH) {
+            Float scale = LOGO_WIDTH / logoBmp.getWidth();
+            Matrix matrix = new Matrix();
+            matrix.postScale(scale, scale);
+            logoBmp = Bitmap.createBitmap(logoBmp, 0, 0, logoBmp.getWidth(), logoBmp.getHeight(), matrix, true);
+        }
+    }
+
+    private void printLogo() throws IOException {
+        if (logoBmp == null) {
+            throw new IOException("logo is not exist");
+        }
+        mOutputStream = mBluetoothSocket.getOutputStream();
+        byte[] bmpByte = printRasterBmp(0, logoBmp, BitmapToByteData.BmpType.Threshold,
+                BitmapToByteData.AlignType.Center, 568);
+        mOutputStream.write(bmpByte);
         mOutputStream.flush();
     }
 
     private void cutPaper() throws IOException {
         mOutputStream = mBluetoothSocket.getOutputStream();
+        mOutputStream.write("\n\n\n\n\n\n".getBytes("GBK"));
         mOutputStream.write(new byte[] { 0x0a, 0x0a, 0x1d, 0x56, 0x01 });
         mOutputStream.flush();
     }
