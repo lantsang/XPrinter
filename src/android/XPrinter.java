@@ -63,6 +63,14 @@ public class XPrinter extends CordovaPlugin {
             this.connect(macAddress, callbackContext);
         }
             break;
+        case "print": {
+            String title = args.getString(0);
+            String serial = args.getString(1);
+            String body = args.getString(2);
+            String timestamp = args.getString(3);
+            this.print(title, serial, body, timestamp, callbackContext);
+        }
+            break;
         case "printTest": {
             String title = args.getString(0);
             String body = args.getString(1);
@@ -110,6 +118,19 @@ public class XPrinter extends CordovaPlugin {
         }
     }
 
+    private void print(String title, String serial, String body, String timestamp, CallbackContext callbackContext) {
+        try {
+            printTitle(title);
+            printSerial(serial);
+            printBody(body);
+            printTimestamp(timestamp);
+            cutPaper();
+            callbackContext.success("Print success");
+        } catch (Exception e) {
+            callbackContext.error("Print error: " + e.toString());
+        }
+    }
+
     private void printTest(String title, String body, String footer, CallbackContext callbackContext) {
         try {
             printTitle(title);
@@ -124,11 +145,21 @@ public class XPrinter extends CordovaPlugin {
 
     private void printTitle(String title) throws IOException {
         mOutputStream = mBluetoothSocket.getOutputStream();
+        byte[] sizeByte = selectCharacterSize(NORMAL_SIZE);
+        mOutputStream.write(sizeByte);
+        byte[] aliginByte = selectAlignment(ALIGN_CENTER);
+        mOutputStream.write(aliginByte);
+        mOutputStream.write((title + "\n\n\n").getBytes("GBK"));
+        mOutputStream.flush();
+    }
+
+    private void printSerial(String serial) throws IOException {
+        mOutputStream = mBluetoothSocket.getOutputStream();
         byte[] sizeByte = selectCharacterSize(LARGE_SIZE);
         mOutputStream.write(sizeByte);
         byte[] aliginByte = selectAlignment(ALIGN_CENTER);
         mOutputStream.write(aliginByte);
-        mOutputStream.write((title + "\n").getBytes("GBK"));
+        mOutputStream.write((serial + "\n").getBytes("GBK"));
         mOutputStream.flush();
     }
 
@@ -138,7 +169,17 @@ public class XPrinter extends CordovaPlugin {
         mOutputStream.write(sizeByte);
         byte[] aliginByte = selectAlignment(ALIGN_CENTER);
         mOutputStream.write(aliginByte);
-        mOutputStream.write((body + "\n").getBytes("GBK"));
+        mOutputStream.write(("\n" + body + "\n").getBytes("GBK"));
+        mOutputStream.flush();
+    }
+
+    private void printTimestamp(String timestamp) throws IOException {
+        mOutputStream = mBluetoothSocket.getOutputStream();
+        byte[] sizeByte = selectCharacterSize(SMALL_SIZE);
+        mOutputStream.write(sizeByte);
+        byte[] aliginByte = selectAlignment(ALIGN_CENTER);
+        mOutputStream.write(aliginByte);
+        mOutputStream.write(("\n" + timestamp + "\n").getBytes("GBK"));
         mOutputStream.flush();
     }
 
