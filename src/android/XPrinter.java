@@ -39,7 +39,8 @@ public class XPrinter extends CordovaPlugin {
     private Bitmap logoBmp = null;
 
     private static final Integer SMALL_SIZE = 0;
-    private static final Integer NORMAL_SIZE = 10;
+    private static final Integer NORMAL_SIZE = 15;
+    private static final Integer MEDIAL_SIZE = 25;
     private static final Integer LARGE_SIZE = 34;
 
     private static final Integer ALIGN_LEFT = 0;
@@ -145,7 +146,7 @@ public class XPrinter extends CordovaPlugin {
 
     private void printTitle(String title) throws IOException {
         mOutputStream = mBluetoothSocket.getOutputStream();
-        byte[] sizeByte = selectCharacterSize(NORMAL_SIZE);
+        byte[] sizeByte = selectCharacterSize(MEDIAL_SIZE);
         mOutputStream.write(sizeByte);
         byte[] aliginByte = selectAlignment(ALIGN_CENTER);
         mOutputStream.write(aliginByte);
