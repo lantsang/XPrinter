@@ -39,7 +39,7 @@ public class XPrinter extends CordovaPlugin {
     private Bitmap logoBmp = null;
 
     private static final Integer SMALL_SIZE = 0;
-    private static final Integer NORMAL_SIZE = 17;
+    private static final Integer NORMAL_SIZE = 9;
     private static final Integer MEDIAL_SIZE = 25;
     private static final Integer LARGE_SIZE = 34;
 
